@@ -14,7 +14,7 @@ Bu proje, ASP.NET Core MVC, Entity Framework Core ve Identity teknolojilerini ku
 
 1.  **Repoyu Klonla:**
     ```bash
-    git clone [https://github.com/9enesercan/DogusTeknoloji-SpeedBootcamp-BlogProject.git](https://github.com/9enesercan/DogusTeknoloji-SpeedBootcamp-BlogProject.git)
+    git clone https://github.com/9enesercan/DogusTeknoloji-SpeedBootcamp-BlogProject.git
     cd DogusTeknoloji-SpeedBootcamp-BlogProject
     ```
 
