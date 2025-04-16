@@ -97,3 +97,21 @@ Bu proje, ASP.NET Core MVC, Entity Framework Core ve Identity teknolojilerini ku
 | HTML & CSS            | Web sayfalarının temel yapı taşları ve stil tanımları |
 | Dependency Injection  | Bağımlılıkların yönetimi için kullanılan tasarım deseni |
 | SOLID & Repository    | Temiz kodlama prensipleri ve veri erişim katmanı deseni |
+
+
+## Uygulama Ekran Görüntüleri 
+*Ana Sayfa
+![image](https://github.com/user-attachments/assets/2735b6d7-660a-4914-a298-00b2f786cdf9)
+
+*Admin Dashboard
+![image](https://github.com/user-attachments/assets/70f052f9-10bd-410c-9f2b-5dcb52733279)
+
+*Admin kullanıcılar , yorumlar ve katagorileri kontrolleri sağlayacağı ekranlar örnek
+![image](https://github.com/user-attachments/assets/3737cdbd-95d4-4d9c-91e3-ba35ec79e60e)
+
+*Blog oluşturma 
+![image](https://github.com/user-attachments/assets/ac21988c-1c36-4d26-be7a-edfd94ca3f37)
+
+*Profilde bulunan blog kontrolleri
+![image](https://github.com/user-attachments/assets/928cafe6-e238-43e0-8503-324be995d473)
+
