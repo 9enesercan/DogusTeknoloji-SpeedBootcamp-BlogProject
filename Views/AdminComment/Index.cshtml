@@ -1,0 +1,95 @@
+﻿@using BlogProject.Models.Entities;
+@model IEnumerable<IGrouping<BlogProject.Models.Entities.BlogPost, BlogProject.Models.Entities.Comment>>
+
+@{
+    ViewData["Title"] = "Yorum Yönetimi";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Yorum Yönetimi</h2>
+
+    @foreach (var blogGroup in Model)
+    {
+        var commentCount = blogGroup.Count();
+        <div class="mb-4 p-3 border rounded shadow-sm bg-light">
+            <!-- Blog Başlığı -->
+            <h5 class="mb-2">
+                @blogGroup.Key.Title
+                <a asp-controller="Blog" asp-action="Details" asp-route-id="@blogGroup.Key.Id" class="btn btn-sm btn-outline-primary ms-3">Blogu Gör</a>
+            </h5>
+            <p class="text-muted small">@blogGroup.Key.User?.Email • @blogGroup.Key.PublishedDate.ToShortDateString()</p>
+
+            <!-- Scrollable Yorum Kutusu -->
+            <div class="bg-white border rounded p-3" style="@(commentCount > 3 ? "max-height: 300px; overflow-y: auto;" : "")">
+                @foreach (var comment in blogGroup.OrderByDescending(c => c.CreatedAt))
+                {
+                    <div class="border-bottom pb-2 mb-3">
+                        <div class="fw-bold">@comment.User?.Email</div>
+                        <div>@comment.Content</div>
+                        <small class="text-muted">@comment.CreatedAt.ToString("g")</small>
+
+                        <!-- Sil butonunu sağa yasla -->
+                        <div class="d-flex justify-content-end mt-2">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteCommentModal"
+                                    data-comment-id="@comment.Id"
+                                    data-blog-title="@blogGroup.Key.Title"
+                                    data-user-email="@comment.User?.Email"
+                                    data-content="@comment.Content">
+                                Sil
+                            </button>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    }
+</div>
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="deleteCommentId" />
+
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteCommentModalLabel">Yorumu Sil</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong><span id="deleteUserEmail"></span></strong> kullanıcısının yorumunu silmek üzeresiniz.</p>
+                    <blockquote class="blockquote text-muted">
+                        <small id="deleteContentPreview"></small>
+                    </blockquote>
+                    <p>İlgili blog: <strong><span id="deleteBlogTitle"></span></strong></p>
+                    <p class="text-danger fw-bold">Bu işlem geri alınamaz. Devam etmek istiyor musunuz?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        var deleteModal = document.getElementById('deleteCommentModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var commentId = button.getAttribute('data-comment-id');
+            var blogTitle = button.getAttribute('data-blog-title');
+            var email = button.getAttribute('data-user-email');
+            var content = button.getAttribute('data-content');
+
+            deleteModal.querySelector('#deleteCommentId').value = commentId;
+            deleteModal.querySelector('#deleteBlogTitle').innerText = blogTitle;
+            deleteModal.querySelector('#deleteUserEmail').innerText = email;
+            deleteModal.querySelector('#deleteContentPreview').innerText = content;
+        });
+    </script>
+}

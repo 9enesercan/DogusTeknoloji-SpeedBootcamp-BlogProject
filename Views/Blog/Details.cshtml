@@ -1,0 +1,206 @@
+﻿@model BlogProject.Models.Entities.BlogPost
+@{
+    ViewData["Title"] = Model.Title;
+    var currentUserId = User.Identity.IsAuthenticated
+        ? User.FindFirst("sub")?.Value ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value
+        : null;
+}
+
+<div class="container mt-4">
+    <!-- Başlık -->
+    <div class="text-center mb-4">
+        <h1 class="display-5 fw-bold">@Model.Title</h1>
+        <p class="text-muted">
+            @Model.User?.Email | @Model.PublishedDate.ToString("dd MMM yyyy") |
+            <span class="badge bg-secondary">@Model.Category?.Name</span>
+        </p>
+    </div>
+
+    <!-- Görsel -->
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <div class="text-center mb-4">
+            <img src="@Model.ImageUrl" class="img-fluid rounded shadow-sm" style="max-height: 450px; object-fit: cover;" />
+        </div>
+    }
+
+    <!-- İçerik -->
+    <div class="bg-white p-4 rounded shadow-sm mb-5" style="line-height: 1.8; font-size: 1.05rem;">
+        @Html.Raw(Model.Content)
+    </div>
+
+    <!-- Yorumlar -->
+    <div class="mt-5">
+        <h4 class="mb-3">Yorumlar</h4>
+
+        @if (Model.Comments != null && Model.Comments.Any())
+        {
+            @foreach (var comment in Model.Comments.Where(c => c.ParentId == null).OrderByDescending(c => c.CreatedAt))
+            {
+                <div class="border rounded p-3 mb-2 bg-white">
+                    <div class="fw-bold">@comment.User?.Email</div>
+                    <div>@comment.Content</div>
+                    <small class="text-muted">@comment.CreatedAt.ToString("g")</small>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <button class="btn btn-sm btn-link text-decoration-none p-0 mt-1"
+                                type="button"
+                                onclick="document.getElementById('replyForm-@comment.Id').classList.toggle('d-none')">
+                            Yanıtla
+                        </button>
+
+                        <div id="replyForm-@comment.Id" class="d-none mt-2">
+                            <form method="post" asp-controller="Comment" asp-action="Reply">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="BlogPostId" value="@Model.Id" />
+                                <input type="hidden" name="ParentId" value="@comment.Id" />
+                                <textarea name="Content" class="form-control mb-2" rows="2" required></textarea>
+                                <button type="submit" class="btn btn-sm btn-primary">Yanıtla</button>
+                            </form>
+                        </div>
+                    }
+
+                    @if (currentUserId == comment.UserId)
+                    {
+                        <div class="mt-2 text-end">
+                            <a asp-controller="Comment" asp-action="Edit" asp-route-id="@comment.Id" class="btn btn-sm btn-outline-success me-2">Düzenle</a>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteCommentModal"
+                                    data-comment-id="@comment.Id">
+                                Sil
+                            </button>
+                        </div>
+                    }
+
+                    <!-- ALT YORUMLAR (YANITLAR) -->
+                    @{
+                        var replies = Model.Comments.Where(r => r.ParentId == comment.Id).OrderBy(r => r.CreatedAt).ToList();
+                        var showReplyLimit = 3;
+                        var shownReplies = replies.Take(showReplyLimit).ToList();
+                        var hiddenReplies = replies.Skip(showReplyLimit).ToList();
+                    }
+
+                    @foreach (var reply in shownReplies)
+                    {
+                        <div class="border rounded p-3 mb-2 ms-5 bg-light">
+                            <div class="fw-bold">@reply.User?.Email</div>
+                            <div>@reply.Content</div>
+                            <small class="text-muted">@reply.CreatedAt.ToString("g")</small>
+
+                            @if (currentUserId == reply.UserId)
+                            {
+                                <div class="mt-2 text-end">
+                                    <a asp-controller="Comment" asp-action="Edit" asp-route-id="@reply.Id" class="btn btn-sm btn-outline-success me-2">Düzenle</a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteCommentModal"
+                                            data-comment-id="@reply.Id">
+                                        Sil
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (hiddenReplies.Any())
+                    {
+                        <div id="replies-@comment.Id" class="d-none">
+                            @foreach (var reply in hiddenReplies)
+                            {
+                                <div class="border rounded p-3 mb-2 ms-5 bg-light">
+                                    <div class="fw-bold">@reply.User?.Email</div>
+                                    <div>@reply.Content</div>
+                                    <small class="text-muted">@reply.CreatedAt.ToString("g")</small>
+
+                                    @if (currentUserId == reply.UserId)
+                                    {
+                                        <div class="mt-2 text-end">
+                                            <a asp-controller="Comment" asp-action="Edit" asp-route-id="@reply.Id" class="btn btn-sm btn-outline-success me-2">Düzenle</a>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteCommentModal"
+                                                    data-comment-id="@reply.Id">
+                                                Sil
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <button class="btn btn-outline-secondary btn-sm ms-5 mb-2"
+                                onclick="document.getElementById('replies-@comment.Id').classList.remove('d-none'); this.remove();">
+                            @hiddenReplies.Count() yanıt daha...
+                        </button>
+                    }
+
+                </div>
+            }
+        }
+        else
+        {
+            <p class="text-muted">Henüz yorum yapılmamış.</p>
+        }
+    </div>
+
+    <!-- Yorum Ekleme -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="mt-4">
+            <h5>Yorum Yap</h5>
+            <form asp-controller="Comment" asp-action="Create" method="post">
+                <input type="hidden" name="BlogPostId" value="@Model.Id" />
+                <div class="form-floating mb-3">
+                    <textarea name="Content" class="form-control" placeholder="Yorum yazın..." style="height: 120px;" required></textarea>
+                    <label>Yorumunuz</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Gönder</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mt-4">Yorum yapmak için <a asp-controller="Account" asp-action="Login">giriş yapmalısınız</a>.</p>
+    }
+</div>
+
+<!-- Silme Onay Modal -->
+<div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" asp-controller="Comment" asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="deleteCommentId" />
+            <input type="hidden" name="blogPostId" value="@Model.Id" />
+
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteCommentModalLabel">Yorumu Sil</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    Bu yorumu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const deleteModal = document.getElementById('deleteCommentModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const commentId = button.getAttribute('data-comment-id');
+            deleteModal.querySelector('#deleteCommentId').value = commentId;
+        });
+    </script>
+}

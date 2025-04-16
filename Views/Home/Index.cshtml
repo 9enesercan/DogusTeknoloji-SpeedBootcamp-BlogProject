@@ -1,0 +1,102 @@
+﻿@using BlogProject.Models.Entities
+@model IEnumerable<BlogPost>
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    var categories = ViewBag.Categories as IEnumerable<Category>;
+    int? selectedCategory = ViewBag.SelectedCategory as int?;
+    string search = ViewBag.Search as string ?? "";
+}
+
+<div class="container mt-4">
+
+    <!-- 🔍 Filtreleme -->
+    <form method="get" class="row g-2 mb-4 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Kategori</label>
+            <select name="categoryId" class="form-select">
+                <option value="">Tümü</option>
+                @foreach (var cat in categories)
+                {
+                    <option value="@cat.Id" selected="@(cat.Id == selectedCategory)">
+                        @cat.Name
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-5">
+            <label class="form-label fw-semibold">Arama</label>
+            <input type="text" name="search" class="form-control" placeholder="Blog başlığı veya içerikte ara..." value="@search" />
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filtrele</button>
+            <a href="/" class="btn btn-outline-secondary w-100">Temizle</a>
+        </div>
+    </form>
+
+    <!-- 📝 Blog Kartları -->
+    @foreach (var blog in Model)
+    {
+        <div class="blog-list-item mb-4">
+            @if (!string.IsNullOrEmpty(blog.ImageUrl))
+            {
+                <img src="@blog.ImageUrl" class="blog-list-img" />
+            }
+            else
+            {
+                <div class="blog-list-img bg-light d-flex align-items-center justify-content-center text-muted">
+                    <span class="text-center">Görsel Yok</span>
+                </div>
+            }
+
+            <div class="blog-list-content">
+                <div>
+                    <h5 class="fw-bold">@blog.Title</h5>
+                    <p class="text-muted small mb-1">
+                        @blog.PublishedDate.ToString("dd MMM yyyy") • @blog.Category?.Name • @blog.User?.Email
+                    </p>
+                  
+                </div>
+                <div class="text-end">
+                    <a asp-controller="Blog" asp-action="Details" asp-route-id="@blog.Id" class="btn btn-sm btn-outline-primary">
+                        Yazıyı Oku
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- 📄 Sayfalama -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-route-page="@(ViewBag.CurrentPage - 1)"
+                       asp-route-categoryId="@ViewBag.SelectedCategory"
+                       asp-route-search="@ViewBag.Search">Önceki</a>
+                </li>
+
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link"
+                           asp-route-page="@i"
+                           asp-route-categoryId="@ViewBag.SelectedCategory"
+                           asp-route-search="@ViewBag.Search">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-route-page="@(ViewBag.CurrentPage + 1)"
+                       asp-route-categoryId="@ViewBag.SelectedCategory"
+                       asp-route-search="@ViewBag.Search">Sonraki</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<BlogProject.Models.Entities.BlogPost>
+@{
+    ViewData["Title"] = "Bloglarım";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Yayınladığım Bloglar</h2>
+
+    @if (!Model.Any())
+    {
+        <p class="text-muted">Henüz bir blog yayınlamadınız.</p>
+    }
+    else
+    {
+        @foreach (var blog in Model.OrderByDescending(b => b.PublishedDate))
+        {
+            <div class="blog-list-item">
+                @if (!string.IsNullOrEmpty(blog.ImageUrl))
+                {
+                    <img src="@blog.ImageUrl" class="blog-list-img" />
+                }
+                else
+                {
+                    <div class="blog-list-img bg-light d-flex align-items-center justify-content-center text-muted">
+                        <span class="p-3">Görsel Yok</span>
+                    </div>
+                }
+
+                <div class="blog-list-content">
+                    <div>
+                        <h5>@blog.Title</h5>
+                        <p class="text-muted small">
+                            @blog.PublishedDate.ToShortDateString() | @blog.Category?.Name
+                        </p>
+                        <p>@blog.Content?.Substring(0, Math.Min(blog.Content.Length, 100))...</p>
+                    </div>
+
+                    <div class="text-end">
+                        <a asp-action="Details" asp-route-id="@blog.Id" class="btn btn-sm btn-outline-primary">Detay</a>
+                        <a asp-action="Edit" asp-route-id="@blog.Id" class="btn btn-sm btn-outline-success">Düzenle</a>
+                        <form asp-action="Delete" asp-route-id="@blog.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

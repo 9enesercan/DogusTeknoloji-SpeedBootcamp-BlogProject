@@ -1,0 +1,33 @@
+﻿@using BlogProject.Models.ViewModels
+@model BlogPostViewModel
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Title"></label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Content"></label>
+        <textarea asp-for="Content" class="form-control" rows="8"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+
+
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryId"></label>
+        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+            <option value="">Kategori Seç</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Image">Görsel Yükle</label>
+        <input asp-for="Image" type="file" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Kaydet</button>
+</form>

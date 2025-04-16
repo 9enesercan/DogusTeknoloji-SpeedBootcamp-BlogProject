@@ -1,0 +1,53 @@
+﻿@using BlogProject.Models.Entities
+@model IEnumerable<Category>
+@{
+    ViewData["Title"] = "Kategori Yönetimi";
+}
+
+<div class="container mt-4">
+    <h2>Kategoriler</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-warning">@TempData["Error"]</div>
+    }
+
+    <form asp-action="Add" method="post" class="row g-3 mb-4">
+        @Html.AntiForgeryToken()
+        <div class="col-auto">
+            <input type="text" name="name" class="form-control" placeholder="Kategori adı girin" required />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Ekle</button>
+        </div>
+    </form>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Ad</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Name</td>
+                    <td>
+                        <form asp-action="Delete" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?');">
+                                Sil
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

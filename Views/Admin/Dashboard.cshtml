@@ -1,0 +1,137 @@
+﻿@using BlogProject.Models.Entities
+@model IEnumerable<IGrouping<ApplicationUser, BlogPost>>
+
+@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<div class="container mt-4">
+    <div class="row mb-5">
+        <div class="col-md-3 fade-up delay-0">
+            <div class="card text-white shadow-sm" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                <div class="card-body">
+                    <h5 class="card-title">Blog Sayısı</h5>
+                    <p class="fs-4">@ViewBag.BlogCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 fade-up delay-1">
+            <div class="card text-white shadow-sm" style="background: linear-gradient(135deg, #28a745, #1c7c31);">
+                <div class="card-body">
+                    <h5 class="card-title">Kullanıcı Sayısı</h5>
+                    <p class="fs-4">@ViewBag.UserCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 fade-up delay-2">
+            <div class="card text-white shadow-sm" style="background: linear-gradient(135deg, #ffc107, #cc9a06);">
+                <div class="card-body">
+                    <h5 class="card-title">Yorum Sayısı</h5>
+                    <p class="fs-4">@ViewBag.CommentCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 fade-up delay-3">
+            <div class="card text-white shadow-sm" style="background: linear-gradient(135deg, #17a2b8, #0e6e82);">
+                <div class="card-body">
+                    <h5 class="card-title">Kategori Sayısı</h5>
+                    <p class="fs-4">@ViewBag.CategoryCount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+    <h2 class="mt-5">Yazarlara Göre Bloglar</h2>
+
+    @foreach (var group in Model)
+    {
+        var blogCount = group.Count();
+
+        <div class="mb-4">
+            <h5>@group.Key.Email (@blogCount blog)</h5>
+            <div class="table-responsive @(blogCount > 3 ? "scroll-box" : "")" style="@(blogCount > 3 ? "max-height: 350px; overflow-y: auto;" : "")">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Görsel</th>
+                            <th>Başlık</th>
+                            <th>Kategori</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var blog in group.OrderByDescending(b => b.PublishedDate))
+                        {
+                            <tr>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(blog.ImageUrl))
+                                    {
+                                        <img src="@blog.ImageUrl" width="100" class="rounded shadow-sm" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Yok</span>
+                                    }
+                                </td>
+                                <td>@blog.Title</td>
+                                <td>@blog.Category?.Name</td>
+                                <td>@blog.PublishedDate.ToShortDateString()</td>
+                                <td>
+                                    <a asp-controller="Blog" asp-action="Details" asp-route-id="@blog.Id" class="btn btn-sm btn-outline-primary">Detay</a>
+                                    <a asp-controller="Blog" asp-action="Edit" asp-route-id="@blog.Id" class="btn btn-sm btn-outline-success">Düzenle</a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal"
+                                            data-id="@blog.Id"
+                                            data-title="@blog.Title">
+                                        Sil
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Sil Modal (değişmedi) -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="DeleteConfirmed" asp-controller="Admin" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="modalBlogId" />
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Blog Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong><span id="modalBlogTitle"></span></strong> başlıklı blogu silmek istediğinize emin misiniz?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const modal = document.getElementById('confirmDeleteModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const blogId = button.getAttribute('data-id');
+            const blogTitle = button.getAttribute('data-title');
+            modal.querySelector('#modalBlogId').value = blogId;
+            modal.querySelector('#modalBlogTitle').innerText = blogTitle;
+        });
+    </script>
+}

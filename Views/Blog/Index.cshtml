@@ -1,0 +1,19 @@
+﻿@using BlogProject.Models.Entities
+@model IEnumerable<BlogPost>
+
+<h2>Blog Yazıları</h2>
+
+<div class="row">
+    @foreach (var blog in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>@blog.Title</h5>
+                    <p>@blog.Content.Substring(0, Math.Min(blog.Content.Length, 100))...</p>
+                    <a asp-action="Details" asp-route-id="@blog.Id" class="btn btn-primary">Devamını oku</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
